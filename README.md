@@ -1,52 +1,37 @@
 # Sandbox RootFS
-This is the sandbox's rootfs used by [lyrio-judge](https://github.com/lyrio-dev/judge). It's based on Ubuntu 22.04 and contains compilers (and interpreters) below:
 
-* GCC 12
-* Clang 14 (from [LLVM](https://apt.llvm.org/))
-* OpenJDK 17
-* Kotlin (from [SDKMAN!](https://kotlinlang.org/docs/tutorials/command-line.html))
-* Free Pascal 3
-* Python 2.7
-* Python 3.9
-* Python 3.10
-* Swift (from [Swift.org](https://swift.org/))
-* Rust (from [Rustup](https://rustup.rs/))
-* Go (from [PPA](https://launchpad.net/~longsleep/+archive/ubuntu/golang-backports))
-* GHC 9.0.1 (from [PPA](https://launchpad.net/~hvr/+archive/ubuntu/ghc))
-* C# (from [Mono](https://www.mono-project.com/download/stable/))
-* F# (from [Mono](https://www.mono-project.com/download/stable/))
+这是 **NextOJ** 使用的沙箱 RootFS。它基于 **Ubuntu 20.04.1**，尽可能还原 NOI Linux 的环境。
 
-Each compiler (or interpreter) is available in `$PATH`. It also contains [`testlib.h`](https://github.com/MikeMirzayanov/testlib) in `/usr/include`.
+每个编译器都可以通过 `$PATH` 直接访问。你可以从 [release](https://github.com/oimoj/sandbox-rootfs/releases) 下载，也可以自行引导构建。
 
-You can download it from [release](https://github.com/lyrio-dev/sandbox-rootfs/releases) or bootstrap by yourself.
+# 自行引导构建
 
-# Bootstrapping
-You'll need:
+你将需要以下条件：
 
-* A Linux box with root privilege
-* `arch-chroot` (usually in the package `arch-install-scripts`)
-* `debootstrap` (some old version of Debian's `debootstrap` couldn't bootstrap Ubuntu 22.04)
+* 一个具有 root 权限的 Linux 环境
+* `arch-chroot`（通常在 `arch-install-scripts` 包中）
+* `debootstrap`（确保使用与 Ubuntu 20.04.1 兼容的版本）
 
-First, clone this repo:
+首先，克隆此仓库：
 
 ```bash
-git clone git@github.com:lyrio-dev/sandbox-rootfs.git
+git clone https://github.com/oimoj/sandbox-rootfs
 cd sandbox-rootfs
 ```
 
-Set the path to bootstrap rootfs. If there're anything inside it, it'll be `rm -rf`-ed. If the path doesn't exist, it'll be `mkdir -p`-ed.
+设置 RootFS 的引导路径。如果路径中已有内容，将被 `rm -rf` 清空；如果路径不存在，则会被 `mkdir -p` 创建。
 
 ```bash
 export ROOTFS_PATH=/rootfs
 ```
 
-If you're root, just run the `bootstrap.sh` script:
+如果你是 root 用户，只需运行 `bootstrap.sh` 脚本：
 
 ```bash
 ./bootstrap.sh
 ```
 
-Or if you use `sudo`, remember to preserve the `ROOTFS_PATH` environment variable with `-E` option:
+如果你使用 `sudo`，请确保使用 `-E` 选项保留 `ROOTFS_PATH` 环境变量：
 
 ```bash
 sudo -E ./bootstrap.sh

@@ -1,10 +1,6 @@
 name: Build
 
-on:
-  push:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 9 * * *'
+on: workflow_dispatch
 
 env:
   TZ: Asia/Shanghai
@@ -22,7 +18,6 @@ jobs:
     - name: Build
       run: |
         export ROOTFS_PATH="$(pwd)/rootfs"
-        export MIRROR="http://azure.archive.ubuntu.com/ubuntu"
         sudo --preserve-env ./bootstrap.sh
     - name: Compress with XZ
       run: |
