@@ -36,7 +36,7 @@ rm -rf "$ROOTFS_PATH"
 mkdir -p "$ROOTFS_PATH"
 
 # Use debootstrap to create a rootfs for Ubuntu 20.04.1 (focal)
-debootstrap --components=main,universe "$CODENAME" "$ROOTFS_PATH" "$MIRROR"
+debootstrap --components=main,universe "$CODENAME" "$ROOTFS_PATH" "http://archive.ubuntu.com/"
 
 # Copy the install script into the rootfs
 cp "$INSTALL_SCRIPT" "$ROOTFS_PATH/root"
