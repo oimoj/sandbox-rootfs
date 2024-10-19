@@ -29,7 +29,7 @@ fi
 
 # Set default mirror if MIRROR is not set
 if [[ "$MIRROR" == "" ]]; then
-    MIRROR="http://mirrors.tuna.tsinghua.edu.cn/ubuntu"
+    MIRROR="http://azure.archive.ubuntu.com/ubuntu"
 fi
 
 # Set Ubuntu version and codename to 20.04.1 (focal)

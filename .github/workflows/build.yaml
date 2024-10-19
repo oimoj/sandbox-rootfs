@@ -1,30 +1,110 @@
-name: Build
+name: Multi-Arch Build and Release
 
-on: workflow_dispatch
-
-env:
-  TZ: Asia/Shanghai
+on: 
+  workflow_dispatch:
 
 jobs:
-  build_deploy:
-    name: Build
+  build_x86_64:
+    name: Build x86_64
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+
     - name: Install dependencies
       run: |
         sudo apt-get install -y arch-install-scripts debootstrap
-    - name: Build
-      run: |
-        export ROOTFS_PATH="$(pwd)/rootfs"
-        sudo --preserve-env ./bootstrap.sh
-    - name: Compress with XZ
-      run: |
-        sudo tar -cJvf rootfs.tar.xz rootfs
-        sudo chmod 777 rootfs.tar.xz
-    - uses: actions/upload-artifact@v3
-      with:
-        name: rootfs
-        path: rootfs.tar.xz
 
+    - name: Build x86_64 rootfs
+      run: |
+        export ROOTFS_PATH="$(pwd)/rootfs_x86_64"
+        sudo --preserve-env ./bootstrap.sh
+        sudo tar -cJvf rootfs_x86_64.tar.xz rootfs_x86_64
+        sudo chmod 777 rootfs_x86_64.tar.xz
+
+    - name: Upload x86_64 rootfs artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: rootfs_x86_64
+        path: rootfs_x86_64.tar.xz
+
+  build_aarch64:
+    name: Build aarch64
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+      with:
+        platforms: aarch64
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get install -y arch-install-scripts debootstrap
+
+    - name: Build aarch64 rootfs
+      run: |
+        docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+        export ROOTFS_PATH="$(pwd)/rootfs_aarch64"
+        sudo --preserve-env ./bootstrap.sh
+        sudo tar -cJvf rootfs_aarch64.tar.xz rootfs_aarch64
+        sudo chmod 777 rootfs_aarch64.tar.xz
+
+    - name: Upload aarch64 rootfs artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: rootfs_aarch64
+        path: rootfs_aarch64.tar.xz
+
+  create_release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build_x86_64, build_aarch64]  # 等待这两个任务完成
+    steps:
+    - name: Download x86_64 rootfs artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: rootfs_x86_64
+        path: ./artifacts
+
+    - name: Download aarch64 rootfs artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: rootfs_aarch64
+        path: ./artifacts
+
+    - name: Generate Tag Name
+      id: tag_name
+      run: |
+        TAG="v$(date +'%Y.%m.%d')-$(git rev-parse --short HEAD)"
+        echo "TAG_NAME=$TAG" >> $GITHUB_ENV
+
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      with:
+        tag_name: ${{ env.TAG_NAME }}
+        release_name: Multi-Arch RootFS Release ${{ env.TAG_NAME }}
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload x86_64 rootfs to release
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./artifacts/rootfs_x86_64.tar.xz
+        asset_name: rootfs_x86_64.tar.xz
+        asset_content_type: application/x-xz
+
+    - name: Upload aarch64 rootfs to release
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./artifacts/rootfs_aarch64.tar.xz
+        asset_name: rootfs_aarch64.tar.xz
+        asset_content_type: application/x-xz
+  

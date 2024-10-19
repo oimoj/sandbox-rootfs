@@ -1,6 +1,7 @@
 #!/bin/bash -e
 
-GCC_VERSION="9.3.0"
+GCC_VERSION="9.3.0" # Todo
+
 UBUNTU_CODENAME="$(source /etc/os-release && echo "$UBUNTU_CODENAME")"
 
 # Fix PATH environment variable
