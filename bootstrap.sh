@@ -27,11 +27,6 @@ if [[ "$ROOTFS_PATH" == "" ]]; then
     exit 1
 fi
 
-# Set default mirror if MIRROR is not set
-if [[ "$MIRROR" == "" ]]; then
-    MIRROR="http://azure.archive.ubuntu.com/ubuntu"
-fi
-
 # Set Ubuntu version and codename to 20.04.1 (focal)
 UBUNTU_VERSION="20.04.1"
 CODENAME="focal"
